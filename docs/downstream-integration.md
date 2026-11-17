@@ -27,8 +27,10 @@ docker build --platform linux/amd64 -f src/docker/Dockerfile -t archery-downstre
 docker run --rm --network none --entrypoint bash   -e EXPECTED_DEBIAN_CODENAME=bookworm   -e EXPECTED_PYTHON_VERSION=3.14   -e SECRET_KEY=isolated-downstream-image-smoke-check-only   archery-downstream:integration /opt/archery/src/docker/smoke-test.sh
 ```
 
-CI builds the same images on pushes to this branch. Django CI covers Python
-3.11, 3.12 and 3.14 using temporary MySQL/Redis services.
+CI builds the same images on pushes and pull requests targeting this branch.
+Django CI covers Python 3.11, 3.12 and 3.14 using temporary MySQL/Redis services,
+with coverage results in the pytest output. CodeQL runs on this branch as well.
+The base-image workflow performs a local build with read-only repository access.
 
 ## Compatibility requirements
 
@@ -52,3 +54,8 @@ containers on an internal Docker network, with temporary storage and synthetic
 data. Both the base and application images built successfully. Network-disabled
 image smoke checks, dependency consistency, Black and workflow syntax checks
 also passed.
+
+The integration review also checked static-file collection and WSGI initialization
+in the network-disabled image. An empty disposable metadata database and Redis
+broker verified that the Django-Q cluster starts and stops normally on Python
+3.14, with task and schedule tables empty before and after the check.

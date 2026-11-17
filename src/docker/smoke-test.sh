@@ -6,6 +6,7 @@ test "$VERSION_CODENAME" = "${EXPECTED_DEBIAN_CODENAME:?Set the expected Debian 
 source /opt/venv4archery/bin/activate
 cd /opt/archery
 python -m pip check
+python manage.py collectstatic --noinput -v0
 python - <<'PY'
 import os
 import sys
@@ -18,6 +19,10 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "archery.settings")
 import django
 
 django.setup()
+from archery.wsgi import application
+from django.core.handlers.wsgi import WSGIHandler
+
+assert isinstance(application, WSGIHandler)
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.files.storage import storages
 from django.template import Context, Template
