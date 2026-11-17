@@ -43,3 +43,12 @@ CI builds the same images on pushes to this branch. Django CI covers Python
   shell and live authentication/database integrations still require validation.
 
 This branch is the integration candidate for a future downstream release.
+
+## Integration validation
+
+The combined Python 3.14.10 / Django 5.2.19 application passed 1691 tests
+with 1 skipped and 164 subtests passed. Tests used fresh MySQL 8.0 and Redis 7.4
+containers on an internal Docker network, with temporary storage and synthetic
+data. Both the base and application images built successfully. Network-disabled
+image smoke checks, dependency consistency, Black and workflow syntax checks
+also passed.
