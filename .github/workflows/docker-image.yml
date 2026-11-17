@@ -1,54 +1,31 @@
-name: Publish Docker image
+name: Validate downstream image
 
 on:
   push:
     branches:
-      - 'master'
-    tags:
-      - 'v*'
+      - 'downstream/integration'
   pull_request:
     branches:
-      - 'master'
+      - 'downstream/integration'
+
+permissions:
+  contents: read
 
 jobs:
-  push_to_registries:
-    name: Build and push Docker images
+  validate:
+    name: Build and smoke-test Bookworm application
     runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: read
     steps:
-      - name: Check out the repo
+      - name: Check out the source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Log in to Docker Hub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Log in to the Container registry
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
-        with:
-          images: |
-            hhyo/archery
-            ghcr.io/${{ github.repository }}
-
-      - name: Build and push Docker images
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
-        with:
-          context: .
-          file: src/docker/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+      - name: Build the base and application
+        run: |
+          docker build --platform linux/amd64 -f src/docker/Dockerfile-base -t archery-downstream-base:integration .
+          docker build --platform linux/amd64 -f src/docker/Dockerfile -t archery-downstream:integration .
+      - name: Smoke-test the application without network access
+        run: |
+          docker run --rm --network none --entrypoint bash \
+            -e EXPECTED_DEBIAN_CODENAME=bookworm \
+            -e EXPECTED_PYTHON_VERSION=3.14 \
+            -e SECRET_KEY=isolated-downstream-image-smoke-check-only \
+            archery-downstream:integration /opt/archery/src/docker/smoke-test.sh
