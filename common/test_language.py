@@ -1661,6 +1661,18 @@ class LanguagePreferenceTests(SimpleTestCase):
                 self.assertIn("/api/v1/sql-workflows/84/execution/", html)
                 self.assertIn("status === 'workflow_executing'", html)
 
+    def test_retry_button_and_warning_are_translated(self):
+        context = {
+            "workflow_detail": SimpleNamespace(id=42, status="workflow_exception"),
+            "is_can_execute": True,
+            "audit_id": 84,
+        }
+        with override("en"):
+            html = render_to_string("detail.html", context)
+            self.assertIn('value="Retry execution"', html)
+            self.assertIn("Retrying reruns the entire workflow", html)
+            self.assertIn("permanently replaces", html)
+
     def test_sql_submission_translations_and_stable_fields(self):
         context = {
             "group_list": [SimpleNamespace(group_id=1, group_name="原始组名")],

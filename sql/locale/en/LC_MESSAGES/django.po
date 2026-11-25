@@ -7251,3 +7251,9 @@ msgstr "The %(keyword)s keyword is not allowed\n"
 
 msgid "当前ClickHouse实例版本低于20.6.3，不支持explain!"
 msgstr "This ClickHouse instance is older than 20.6.3 and does not support EXPLAIN"
+
+msgid "重新执行"
+msgstr "Retry execution"
+
+msgid "重新执行将整单重跑，并覆盖数据库中已保存的历史执行结果与错误信息（不可恢复）。若工单因系统原因从未执行，可重新执行；若已有部分成功，建议重新提交新工单，以免丢失信息。确认重试？"
+msgstr "Retrying reruns the entire workflow and permanently replaces its saved execution results and errors. Retry only if it never executed. If it partially succeeded, submit a new workflow to preserve the history. Retry now?"
