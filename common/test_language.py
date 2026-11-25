@@ -3345,7 +3345,7 @@ class ApiDocumentationLanguageTests(SimpleTestCase):
                 ), patch.object(
                     api.SqlWorkflow.objects, "get", return_value=SimpleNamespace(id=1)
                 ), patch.object(
-                    api.AuditV2, "can_execute", return_value=permitted
+                    api, "AuditV2"
                 ), patch.object(
                     api, "on_correct_time_period", return_value=False
                 ), patch.object(
@@ -3353,6 +3353,7 @@ class ApiDocumentationLanguageTests(SimpleTestCase):
                 ) as engine, patch.object(
                     api, "async_task"
                 ) as task:
+                    api.AuditV2.return_value.can_execute.return_value = permitted
                     serializer.return_value.is_valid.return_value = True
                     with self.assertRaises(ValidationError) as error:
                         api.ExecuteWorkflow().post(request)
