@@ -3343,7 +3343,9 @@ class ApiDocumentationLanguageTests(SimpleTestCase):
                     "get",
                     return_value=SimpleNamespace(has_perm=lambda code: permitted),
                 ), patch.object(
-                    api, "can_execute", return_value=True
+                    api.SqlWorkflow.objects, "get", return_value=SimpleNamespace(id=1)
+                ), patch.object(
+                    api.AuditV2, "can_execute", return_value=permitted
                 ), patch.object(
                     api, "on_correct_time_period", return_value=False
                 ), patch.object(
