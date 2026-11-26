@@ -356,3 +356,18 @@ def test_mongo_write_failure_does_not_return_internal_traceback():
     assert not success
     assert count == 0
     assert message == "MongoDB operation failed"
+
+
+@pytest.mark.parametrize("serializer_name", ["UserSerializer", "UserDetailSerializer"])
+def test_password_policy_messages_remain_available(mocker, serializer_name):
+    from django.core.exceptions import ValidationError
+    from rest_framework.exceptions import ValidationError as APIValidationError
+    from sql_api import serializers
+
+    mocker.patch.object(
+        serializers,
+        "validate_password",
+        side_effect=ValidationError("Password policy failure"),
+    )
+    with pytest.raises(APIValidationError, match="Password policy failure"):
+        getattr(serializers, serializer_name)().validate_password("synthetic")

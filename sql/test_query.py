@@ -262,7 +262,7 @@ def test_generate_sql_returns_exception_message(monkeypatch):
 
     assert _json_content(response) == {
         "status": 1,
-        "msg": "connect failed",
+        "msg": "Operation failed; contact an administrator.",
         "data": "",
     }
 
