@@ -266,3 +266,32 @@ def test_rollback_rejects_non_integer_id_before_any_file_access(mocker, workflow
         views.rollback(request)
     lookup.assert_not_called()
     file_open.assert_not_called()
+
+
+def test_cloud_authentication_failure_does_not_expose_exception(mocker):
+    from common.utils.aliyun_sdk import Aliyun
+
+    mocker.patch(
+        "common.utils.aliyun_sdk.AcsClient", side_effect=RuntimeError("secret-canary")
+    )
+    rds = SimpleNamespace(
+        rds_dbinstanceid="test",
+        ak=SimpleNamespace(raw_key_id="id", raw_key_secret="secret"),
+    )
+    with pytest.raises(RuntimeError, match="^Cloud authentication failed$") as error:
+        Aliyun(rds)
+    assert error.value.__suppress_context__
+
+
+def test_email_failure_does_not_return_traceback_or_secret(mocker, caplog):
+    sender = sendmsg.MsgSender(
+        server="invalid", user="test@example.invalid", password="secret"
+    )
+    mocker.patch(
+        "common.utils.sendmsg.smtplib.SMTP", side_effect=RuntimeError("secret-canary")
+    )
+    with caplog.at_level(logging.ERROR):
+        result = sender.send_email("test", "synthetic", ["recipient@example.invalid"])
+    assert result == "Email delivery failed"
+    assert "secret-canary" not in caplog.text
+    assert "Traceback" not in result

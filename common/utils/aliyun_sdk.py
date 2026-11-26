@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 import datetime
-import traceback
 
 from aliyunsdkcore.client import AcsClient
 from aliyunsdkrds.request.v20140815 import (
@@ -21,8 +20,8 @@ class Aliyun(object):
             ak = rds.ak.raw_key_id
             secret = rds.ak.raw_key_secret
             self.clt = AcsClient(ak=ak, secret=secret)
-        except Exception as m:
-            raise Exception(f"阿里云认证失败：{m}{traceback.format_exc()}")
+        except Exception:
+            raise RuntimeError("Cloud authentication failed") from None
 
     def request_api(self, request, *values):
         if values:

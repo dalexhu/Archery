@@ -5,7 +5,6 @@ import email
 import smtplib
 import requests
 import logging
-import traceback
 from email import encoders
 from email.header import Header
 from email.utils import formataddr
@@ -76,7 +75,7 @@ class MsgSender(object):
         :param to:
         :param kwargs:
         :return: str: 成功为 'success'
-                      有异常为 traceback信息
+                      有异常为不包含内部详情的错误提示
         """
 
         try:
@@ -131,7 +130,7 @@ class MsgSender(object):
             )
             return "success"
         except Exception:
-            errmsg = "邮件推送失败\n{}".format(traceback.format_exc())
+            errmsg = "Email delivery failed"
             logger.error(errmsg)
             return errmsg
 
