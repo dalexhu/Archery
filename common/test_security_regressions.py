@@ -277,7 +277,15 @@ def test_cloud_authentication_failure_does_not_expose_exception(mocker):
     )
     module = importlib.util.module_from_spec(spec)
     mocker.patch.dict(
-        sys.modules, {"aliyunsdkcore.client": SimpleNamespace(AcsClient=Mock())}
+        sys.modules,
+        {
+            "aliyunsdkcore.client": SimpleNamespace(AcsClient=Mock()),
+            "aliyunsdkrds.request.v20140815": SimpleNamespace(
+                DescribeSlowLogsRequest=Mock(),
+                DescribeSlowLogRecordsRequest=Mock(),
+                RequestServiceOfCloudDBARequest=Mock(),
+            ),
+        },
     )
     spec.loader.exec_module(module)
     Aliyun = module.Aliyun
