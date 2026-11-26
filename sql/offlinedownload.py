@@ -26,6 +26,7 @@ from sql.engines.models import ReviewSet, ReviewResult
 from sql.storage import DynamicStorage
 from sql.engines import get_engine
 from common.config import SysConfig
+from sql.utils.query_diagnostics import public_query_error
 
 logger = logging.getLogger("default")
 
@@ -159,6 +160,24 @@ class OffLineDownLoad(EngineBase):
                 shutil.rmtree(temp_dir)
 
     def pre_count_check(self, workflow):
+        # Includes setup and engine cleanup failures outside the inner checks.
+        try:
+            return self._pre_count_check(workflow)
+        except Exception as error:
+            logger.warning("Export precheck failed (%s)", type(error).__name__)
+            result = ReviewSet(full_sql=workflow.sql_content)
+            result.syntax_type = 3
+            result.rows = [
+                ReviewResult(
+                    errlevel=2,
+                    errormessage=public_query_error(),
+                    sql=workflow.sql_content,
+                )
+            ]
+            result.error_count = 1
+            return result
+
+    def _pre_count_check(self, workflow):
         """
         提交工单时进行后端检查，检查行数是否符合阈值 以及 是否允许的查询语句
         :param workflow: 工单实例
@@ -216,9 +235,7 @@ class OffLineDownLoad(EngineBase):
         try:
             query_check_info = check_engine.query_check(db_name=db_name, sql=sql)
         except Exception as e:
-            logger.warning(
-                f"导出查询校验报错，语句：{sql}，错误信息：{traceback.format_exc()}"
-            )
+            logger.warning("Export query validation failed (%s)", type(e).__name__)
             result = ReviewResult(
                 stage="自动审核失败",
                 errlevel=2,
@@ -282,9 +299,7 @@ class OffLineDownLoad(EngineBase):
                     getattr(result_set, "rows", []) or []
                 )
         except Exception as e:
-            logger.warning(
-                f"导出行数统计报错，语句：{sql}，错误信息：{traceback.format_exc()}"
-            )
+            logger.warning("Export row count failed (%s)", type(e).__name__)
             result = ReviewResult(
                 stage="自动审核失败",
                 errlevel=2,
@@ -302,7 +317,9 @@ class OffLineDownLoad(EngineBase):
                 stage="自动审核失败",
                 errlevel=2,
                 stagestatus="检查未通过！",
-                errormessage=result_set.error,
+                errormessage=public_query_error(
+                    getattr(result_set, "diagnostic_code", None)
+                ),
                 affected_rows=actual_rows_check,
                 sql=sql,
             )

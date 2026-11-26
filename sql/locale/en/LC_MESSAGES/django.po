@@ -7257,3 +7257,33 @@ msgstr "Retry execution"
 
 msgid "重新执行将整单重跑，并覆盖数据库中已保存的历史执行结果与错误信息（不可恢复）。若工单因系统原因从未执行，可重新执行；若已有部分成功，建议重新提交新工单，以免丢失信息。确认重试？"
 msgstr "Retrying reruns the entire workflow and permanently replaces its saved execution results and errors. Retry only if it never executed. If it partially succeeded, submit a new workflow to preserve the history. Retry now?"
+
+msgid "SQL column reference is ambiguous."
+msgstr "SQL column reference is ambiguous."
+
+msgid "SQL refers to an unknown column."
+msgstr "SQL refers to an unknown column."
+
+msgid "SQL GROUP BY clause is invalid."
+msgstr "SQL GROUP BY clause is invalid."
+
+msgid "SQL syntax is invalid."
+msgstr "SQL syntax is invalid."
+
+msgid "SQL command is not permitted."
+msgstr "SQL command is not permitted."
+
+msgid "SQL refers to a table that does not exist."
+msgstr "SQL refers to a table that does not exist."
+
+msgid "SQL requires additional database privileges."
+msgstr "SQL requires additional database privileges."
+
+msgid "SQL refers to a routine that does not exist."
+msgstr "SQL refers to a routine that does not exist."
+
+msgid "SQL execution was interrupted."
+msgstr "SQL execution was interrupted."
+
+msgid "SQL execution exceeded the time limit."
+msgstr "SQL execution exceeded the time limit."

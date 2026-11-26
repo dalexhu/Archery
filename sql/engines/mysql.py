@@ -20,6 +20,7 @@ from sql.utils.extract_tables import extract_tables
 from sql.utils.sql_utils import get_syntax_type, remove_comments
 from . import EngineBase
 from .models import ResultSet, ReviewResult, ReviewSet
+from sql.utils.query_diagnostics import public_query_error
 from sql.utils.data_masking import data_masking
 from common.config import SysConfig
 
@@ -1166,7 +1167,10 @@ class MysqlEngine(EngineBase):
                 result_set = self.result_set_binary_as_hex(result_set)
         except Exception as e:
             logger.warning("%s SQL execution failed (%s)", self.name, type(e).__name__)
-            result_set.error = str(e)
+            # Only known MySQL diagnostics are safe for a public response.
+            code = e.args[0] if isinstance(e, MySQLdb.Error) and e.args else None
+            result_set.diagnostic_code = code if type(code) is int else None
+            result_set.error = public_query_error(result_set.diagnostic_code)
         finally:
             if close_conn:
                 self.close()

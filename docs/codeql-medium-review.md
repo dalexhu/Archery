@@ -4,10 +4,10 @@ Scope: the 47 open `py/stack-trace-exposure` findings on downstream/integration
 at 9453cc84. Findings were traced using the CodeQL SARIF code flows, including
 shared sources rather than only the reported response locations.
 
-## Confirmed exposure: 29 findings, plus one mixed finding
+## Confirmed exposure: 30 findings
 
 Alerts **8, 10, 12, 13, 14, 16, 19, 20, 21, 22, 23, 24, 25, 28,
-26, 31, 34, 36, 38, 39, 40, 43, 44, 45, 48, 49, 50, 51, 52** expose
+26, 31, 34, 36, 38, 39, 40, 43, 44, 45, 48, 49, 50, 51, 52, 53** expose
 unexpected application/provider exceptions or account/schema write failures.
 Those failures can include paths, connection details or reflected parameters.
 Responses now retain their existing failure status/shape with fixed messages.
@@ -19,7 +19,7 @@ initialization, email delivery failure returns, and MongoDB shell execution
 failure results. Existing provider logs are outside this response-exposure
 review; no claim is made that all application logs are sanitized.
 
-## Contextual false positives: 17 findings, plus one mixed finding
+## Contextual false positives: 17 findings
 
 These are false positives for **stack trace exposure**, not assertions that
 arbitrary database diagnostics are suitable for anonymous access. Existing
@@ -32,7 +32,6 @@ remain enforced. No scanner suppression or dismissal is applied.
 | 7, 9, 11, 18, 27, 29, 30, 32, 35, 41, 42 | Authorized SQL/resource clients return database driver diagnostic strings for query troubleshooting. They do not format a Python traceback. Removing all such messages would remove a deliberate SQL-client capability. Application exceptions in the resource service are sanitized separately, including the additional source for alert 7. |
 | 15 | The authorized OSC control response contains the GoInception engine diagnostic, not a formatted traceback. The API's own unexpected exception handler already returns a fixed failure message. |
 
-| 53 (mixed) | The original false-positive classification was too broad: unexpected parser/query-check/count exceptions can reveal internals and are now sanitized. Explicit query-check results and database review diagnostics remain intentional feedback. The database-engine source can keep this scanner alert open. |
 
 ## Validation
 
@@ -55,3 +54,20 @@ The remaining contextual conclusions cover the reported flows only; broad
 engine exception handling is not proof that every possible exception is safe. See GitHub Actions for the final commit's CI results. The five
 high-priority contextual findings documented in codeql-high-priority-review.md
 remain unchanged. This review does not publish or deploy an application.
+
+## Alert 53 completion
+
+The mixed assessment is superseded. MySQL query exceptions no longer become
+raw public strings: known SQL error codes produce fixed translated diagnostics
+with the numeric code; unknown, authentication and connection failures produce
+the generic failure message. Driver text, SQL fragments and file paths are
+never interpolated. Query-result errors in export prechecks use only the
+allowlisted diagnostic code; unclassified errors from other engines fail closed.
+Explicit query-check validation messages and normal count/limit results remain.
+The precheck boundary also catches setup and engine-cleanup exceptions. Its
+failure logs contain exception classes rather than SQL or exception payloads.
+
+Mocked regressions run the MySQL-to-export path for syntax, column, table,
+timeout, authentication and unexpected failures in both languages, and cover
+configuration, engine initialization and actual MySQL cleanup failure. COUNT
+fallback and successful export checks remain covered by the existing suite.

@@ -481,3 +481,86 @@ def test_resource_api_preserves_explicit_validation_feedback(mocker):
         "不支持的资源类型或者参数不完整！"
     )
     engine.get_all_tables.assert_not_called()
+
+
+@pytest.mark.parametrize("language", ["en", "zh-hans"])
+@pytest.mark.parametrize("code", [1064, 1054, 1146, 3024, 1045, None])
+def test_export_precheck_classifies_mysql_errors_without_driver_text(
+    mocker, caplog, language, code
+):
+    import MySQLdb
+    from django.utils.translation import override
+    from sql import offlinedownload
+    from sql.utils.query_diagnostics import public_query_error
+
+    engine = MysqlEngine()
+    engine._server_fork_type = MysqlForkType.MYSQL
+    cursor = Mock()
+    error = (
+        MySQLdb.ProgrammingError(code, "secret-canary /private/path")
+        if code
+        else RuntimeError("secret-canary /private/path")
+    )
+    cursor.execute.side_effect = [None, error, None, error]
+    mocker.patch.object(engine, "get_connection").return_value.cursor.return_value = (
+        cursor
+    )
+    mocker.patch.object(engine, "close")
+    mocker.patch.object(
+        engine,
+        "query_check",
+        return_value={"bad_query": False, "filtered_sql": "select 1"},
+    )
+    mocker.patch.object(engine, "filter_sql", return_value="select 1")
+    mocker.patch.object(offlinedownload, "get_engine", return_value=engine)
+    mocker.patch.object(offlinedownload, "SysConfig").return_value.get.side_effect = (
+        lambda key, default=None: default
+    )
+    workflow = SimpleNamespace(
+        sql_content="select 1", db_type="mysql", db_name="synthetic"
+    )
+    with override(language), caplog.at_level(logging.WARNING, logger="default"):
+        result = offlinedownload.OffLineDownLoad().pre_count_check(workflow)
+        assert result.error_count == 1
+        assert result.rows[0].errormessage == public_query_error(code)
+    assert "secret-canary" not in json.dumps(result.to_dict())
+    assert "secret-canary" not in caplog.text
+
+
+@pytest.mark.parametrize("stage", ["config", "engine", "cleanup"])
+def test_export_precheck_setup_and_cleanup_fail_closed(mocker, stage):
+    from sql import offlinedownload
+    from sql.utils.query_diagnostics import public_query_error
+
+    config = mocker.patch.object(offlinedownload, "SysConfig")
+    config.return_value.get.side_effect = lambda key, default=None: default
+    engine = mocker.patch.object(offlinedownload, "get_engine").return_value
+    engine.query_check.return_value = {"bad_query": False, "filtered_sql": "select 1"}
+    if stage == "config":
+        config.side_effect = RuntimeError("secret-canary")
+    elif stage == "engine":
+        offlinedownload.get_engine.side_effect = RuntimeError("secret-canary")
+    else:
+        actual_engine = MysqlEngine()
+        actual_engine._server_fork_type = MysqlForkType.MYSQL
+        cursor = mocker.patch.object(
+            actual_engine, "get_connection"
+        ).return_value.cursor.return_value
+        cursor.description = None
+        cursor.fetchall.return_value = [[1]]
+        cursor.execute.return_value = 1
+        mocker.patch.object(
+            actual_engine,
+            "query_check",
+            return_value={"bad_query": False, "filtered_sql": "select 1"},
+        )
+        mocker.patch.object(
+            actual_engine, "close", side_effect=RuntimeError("secret-canary cleanup")
+        )
+        offlinedownload.get_engine.return_value = actual_engine
+    workflow = SimpleNamespace(
+        sql_content="select 1", db_type="mysql", db_name="synthetic"
+    )
+    result = offlinedownload.OffLineDownLoad().pre_count_check(workflow)
+    assert result.error_count == 1
+    assert result.rows[0].errormessage == public_query_error()

@@ -73,3 +73,33 @@ msgstr "MongoDB 操作失败"
 
 msgid "SMS delivery failed"
 msgstr "短信发送失败"
+
+msgid "SQL column reference is ambiguous."
+msgstr "SQL 列引用不明确。"
+
+msgid "SQL refers to an unknown column."
+msgstr "SQL 引用了未知列。"
+
+msgid "SQL GROUP BY clause is invalid."
+msgstr "SQL GROUP BY 子句无效。"
+
+msgid "SQL syntax is invalid."
+msgstr "SQL 语法错误。"
+
+msgid "SQL command is not permitted."
+msgstr "不允许执行该 SQL 命令。"
+
+msgid "SQL refers to a table that does not exist."
+msgstr "SQL 引用的表不存在。"
+
+msgid "SQL requires additional database privileges."
+msgstr "该 SQL 需要额外的数据库权限。"
+
+msgid "SQL refers to a routine that does not exist."
+msgstr "SQL 引用的存储程序不存在。"
+
+msgid "SQL execution was interrupted."
+msgstr "SQL 执行已中断。"
+
+msgid "SQL execution exceeded the time limit."
+msgstr "SQL 执行超过时间限制。"

@@ -287,7 +287,10 @@ class TestOfflineDownload(TestCase):
         result = OffLineDownLoad().pre_count_check(self.workflow)
 
         self.assertEqual(result.error_count, 1)
-        self.assertEqual(result.rows[0].errormessage, "query failed")
+        self.assertEqual(
+            result.rows[0].errormessage,
+            _("Operation failed; contact an administrator."),
+        )
 
     @patch("sql.offlinedownload.get_engine")
     def test_pre_count_check_pass(self, mock_get_engine):
