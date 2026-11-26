@@ -564,3 +564,160 @@ def test_export_precheck_setup_and_cleanup_fail_closed(mocker, stage):
     result = offlinedownload.OffLineDownLoad().pre_count_check(workflow)
     assert result.error_count == 1
     assert result.rows[0].errormessage == public_query_error()
+
+
+@pytest.mark.parametrize("language", ["en", "zh-hans"])
+@pytest.mark.parametrize(
+    "entry", ["signup", "account_create", "account_reset", "user_create", "user_update"]
+)
+def test_builtin_password_policy_feedback_has_no_side_effects(mocker, language, entry):
+    from django.contrib.auth.password_validation import MinimumLengthValidator
+    from django.core.exceptions import ValidationError
+    from django.utils.translation import override
+    from rest_framework.exceptions import ValidationError as APIValidationError
+    from common import auth
+    from sql import instance_account
+    from sql_api import serializers
+
+    mocker.patch(
+        "django.contrib.auth.password_validation.get_default_password_validators",
+        return_value=[MinimumLengthValidator(9)],
+    )
+    with override(language):
+        with pytest.raises(ValidationError) as error:
+            MinimumLengthValidator(9).validate("xyz")
+        expected = error.value.messages[0]
+        if entry.startswith("user_"):
+            serializer = (
+                serializers.UserSerializer()
+                if entry == "user_create"
+                else serializers.UserDetailSerializer()
+            )
+            save = mocker.patch.object(serializer, "save")
+            with pytest.raises(APIValidationError) as response_error:
+                serializer.validate_password("xyz")
+            payload = str(response_error.value)
+            save.assert_not_called()
+        elif entry == "signup":
+            mocker.patch.object(auth, "SysConfig").return_value.get.return_value = True
+            mocker.patch.object(auth.Users.objects, "filter", return_value=[])
+            create = mocker.patch.object(auth.Users.objects, "create_user")
+            request = RequestFactory().post(
+                "/signup/",
+                {
+                    "username": "synthetic",
+                    "password": "xyz",
+                    "password2": "xyz",
+                    "display": "Test",
+                },
+            )
+            response = auth.sign_up(request)
+            data = json.loads(response.content)
+            assert data["status"] == 1
+            payload = data["msg"]
+            create.assert_not_called()
+        else:
+            mocker.patch.object(
+                instance_account, "user_instances"
+            ).return_value.get.return_value = SimpleNamespace(db_type="mysql")
+            engine = mocker.patch.object(instance_account, "get_engine")
+            data = {
+                "instance_id": 1,
+                "user": "synthetic",
+                "host": "%",
+                "password1": "xyz",
+                "password2": "xyz",
+                "reset_pwd1": "xyz",
+                "reset_pwd2": "xyz",
+            }
+            request = RequestFactory().post("/synthetic/", data)
+            request.user = SimpleNamespace(has_perms=lambda permissions: True)
+            response = getattr(
+                instance_account, "create" if entry == "account_create" else "reset_pwd"
+            )(request)
+            result = json.loads(response.content)
+            assert result["status"] == 1
+            payload = result["msg"]
+            engine.assert_not_called()
+        assert expected in payload
+        assert "Traceback" not in payload
+        assert "xyz" not in payload
+
+
+@pytest.mark.parametrize("language", ["en", "zh-hans"])
+@pytest.mark.parametrize("stage", ["connect", "query", "cleanup"])
+def test_osc_failure_payload_and_logs_hide_internal_errors(
+    mocker, caplog, language, stage
+):
+    from django.utils.translation import override
+    from sql_api import api_workflow_operations as operations
+
+    engine = GoInceptionEngine()
+    connection = mocker.patch.object(engine, "get_connection")
+    close = mocker.patch.object(engine, "close")
+    if stage == "connect":
+        connection.side_effect = RuntimeError("secret-canary /private/path")
+    elif stage == "query":
+        connection.return_value.cursor.return_value.execute.side_effect = RuntimeError(
+            "secret-canary /private/path"
+        )
+    else:
+        close.side_effect = RuntimeError("secret-canary /private/path")
+        cursor = connection.return_value.cursor.return_value
+        cursor.execute.return_value = 0
+        cursor.description = None
+        cursor.fetchall.return_value = []
+    mocker.patch.object(operations, "ensure_viewable")
+    executable = mocker.patch.object(operations, "ensure_workflow_executable")
+    mocker.patch.object(operations, "get_engine", return_value=engine)
+    view = operations.WorkflowOscView()
+    mocker.patch.object(
+        view,
+        "get_audit_workflow",
+        return_value=(Mock(), SimpleNamespace(id=1, instance=Mock())),
+    )
+    request = SimpleNamespace(user=Mock())
+    with override(language), caplog.at_level(logging.WARNING, logger="default"):
+        response = view._operate(request, 1, {"command": "get", "sqlsha1": "synthetic"})
+        expected = (
+            "OSC 操作失败"
+            if stage == "cleanup"
+            else "Operation failed; contact an administrator."
+        )
+        assert response.data["msg"] == security_message(expected)
+    assert "secret-canary" not in json.dumps(response.data)
+    assert "secret-canary" not in caplog.text
+    executable.assert_not_called()
+
+
+@pytest.mark.parametrize("language", ["en", "zh-hans"])
+@pytest.mark.parametrize("code", [1064, 1045])
+def test_goinception_diagnostics_use_codes_not_driver_messages(mocker, language, code):
+    import MySQLdb
+    from django.utils.translation import override
+    from sql.utils.query_diagnostics import public_query_error
+
+    engine = GoInceptionEngine()
+    cursor = mocker.patch.object(
+        engine, "get_connection"
+    ).return_value.cursor.return_value
+    cursor.execute.side_effect = MySQLdb.ProgrammingError(code, "secret-canary")
+    mocker.patch.object(engine, "close")
+    with override(language):
+        result = engine.osc_control(command="get", sqlsha1="synthetic")
+        assert result.error == public_query_error(code)
+    assert "secret-canary" not in result.error
+
+
+def test_goinception_osc_progress_rows_are_preserved(mocker):
+    engine = GoInceptionEngine()
+    cursor = mocker.patch.object(
+        engine, "get_connection"
+    ).return_value.cursor.return_value
+    cursor.execute.return_value = 1
+    cursor.description = [("percent",)]
+    cursor.fetchall.return_value = [(42,)]
+    mocker.patch.object(engine, "close")
+    result = engine.osc_control(command="get", sqlsha1="synthetic")
+    assert result.error is None
+    assert result.to_dict() == [{"percent": 42}]

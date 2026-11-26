@@ -12,6 +12,8 @@ from sql.utils.sql_utils import get_syntax_type
 from . import EngineBase
 from .models import ResultSet, ReviewSet, ReviewResult
 
+from sql.utils.query_diagnostics import public_query_error
+
 logger = logging.getLogger("default")
 
 
@@ -165,8 +167,8 @@ class GoInceptionEngine(EngineBase):
     def query(self, db_name=None, sql="", limit_num=0, close_conn=True, **kwargs):
         """返回 ResultSet"""
         result_set = ResultSet(full_sql=sql)
-        conn = self.get_connection()
         try:
+            conn = self.get_connection()
             cursor = conn.cursor()
             effect_row = cursor.execute(sql)
             if int(limit_num) > 0:
@@ -179,8 +181,9 @@ class GoInceptionEngine(EngineBase):
             result_set.rows = rows
             result_set.affected_rows = effect_row
         except Exception as e:
-            logger.warning(f"goInception语句执行报错，错误信息{traceback.format_exc()}")
-            result_set.error = str(e)
+            logger.warning("GoInception query failed (%s)", type(e).__name__)
+            code = e.args[0] if isinstance(e, MySQLdb.Error) and e.args else None
+            result_set.error = public_query_error(code)
         if close_conn:
             self.close()
         return result_set

@@ -650,8 +650,8 @@ class WorkflowOscView(WorkflowOperationAPIView):
                 command=data["command"], sqlsha1=data["sqlsha1"]
             )
             rows, error = result.to_dict(), result.error
-        except Exception:
-            logger.exception("控制 OSC 执行失败，audit_id=%s", audit_id)
+        except Exception as error:
+            logger.warning("OSC control failed (%s)", type(error).__name__)
             rows, error = [], _("OSC 操作失败")
         return Response({"total": len(rows), "rows": rows, "msg": error})
 
