@@ -48,8 +48,8 @@ connect to business databases, send messages or launch business tasks.
 The first post-fix scan reduced medium findings from 47 to 19. Follow-up review
 reclassified alert 26 as confirmed: the cloud kill handler also referenced an
 undefined logger and could mask the original failure. It now returns a fixed,
-translated message and logs only the exception class. Alert 53 is mixed rather
-than wholly a false positive; unexpected exceptions are fixed at their source.
+translated message and logs only the exception class. Alert 53 was first reclassified as mixed rather than wholly a false positive;
+the completion section below records the subsequent source-level fix.
 The remaining contextual conclusions cover the reported flows only; broad
 engine exception handling is not proof that every possible exception is safe. See GitHub Actions for the final commit's CI results. The five
 high-priority contextual findings documented in codeql-high-priority-review.md
