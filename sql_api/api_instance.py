@@ -273,8 +273,9 @@ class InstanceResource(views.APIView):
 
                 resource = DummyResource()
             else:
-                raise serializers.ValidationError(
-                    {"errors": _("不支持的资源类型或者参数不完整！")}
+                return Response(
+                    {"errors": _("不支持的资源类型或者参数不完整！")},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
         except Exception as msg:
             raise serializers.ValidationError(

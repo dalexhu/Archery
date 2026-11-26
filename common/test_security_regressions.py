@@ -463,3 +463,20 @@ def test_safe_email_failure_follows_request_language(mocker, language, expected)
             sender.send_email("synthetic", "synthetic", ["test@example.invalid"])
             == expected
         )
+
+
+def test_resource_api_preserves_explicit_validation_feedback(mocker):
+    from sql_api import api_instance
+
+    mocker.patch.object(
+        api_instance, "InstanceResourceSerializer"
+    ).return_value.is_valid.return_value = True
+    mocker.patch.object(api_instance.Instance.objects, "get", return_value=Mock())
+    engine = mocker.patch.object(api_instance, "get_engine").return_value
+    request = SimpleNamespace(data={"instance_id": 1, "resource_type": "table"})
+    response = api_instance.InstanceResource().post(request)
+    assert response.status_code == 400
+    assert response.data["errors"] == security_message(
+        "不支持的资源类型或者参数不完整！"
+    )
+    engine.get_all_tables.assert_not_called()
