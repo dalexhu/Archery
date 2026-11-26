@@ -183,7 +183,8 @@ class DingTest(TestCase):
         post.return_value.json.return_value = {"errcode": 1, "errmsg": "test_error"}
         with self.assertLogs("default", level="ERROR") as lg:
             sender.send_ding(self.url, self.content)
-            self.assertIn("test_error", lg.output[0])
+            self.assertIn("钉钉Webhook推送失败", lg.output[0])
+            self.assertNotIn("test_error", lg.output[0])
 
     def tearDown(self):
         pass
