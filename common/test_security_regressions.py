@@ -473,6 +473,7 @@ def test_resource_api_preserves_explicit_validation_feedback(mocker):
     ).return_value.is_valid.return_value = True
     mocker.patch.object(api_instance.Instance.objects, "get", return_value=Mock())
     engine = mocker.patch.object(api_instance, "get_engine").return_value
+    engine.escape_string.side_effect = lambda value: value
     request = SimpleNamespace(data={"instance_id": 1, "resource_type": "table"})
     response = api_instance.InstanceResource().post(request)
     assert response.status_code == 400
