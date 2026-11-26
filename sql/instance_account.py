@@ -110,7 +110,9 @@ def create(request):
     # 关闭连接
     engine.close()
     if exec_result.error:
-        return JsonResponse({"status": 1, "msg": exec_result.error})
+        return JsonResponse(
+            {"status": 1, "msg": "Database account or schema operation failed."}
+        )
 
     # 保存到数据库
     else:
@@ -214,7 +216,9 @@ def grant(request):
     # 关闭连接
     engine.close()
     if exec_result.error:
-        return JsonResponse({"status": 1, "msg": exec_result.error})
+        return JsonResponse(
+            {"status": 1, "msg": "Database account or schema operation failed."}
+        )
     grant_sql = exec_result.full_sql
     return JsonResponse({"status": 0, "msg": "", "data": grant_sql})
 
@@ -263,7 +267,7 @@ def reset_pwd(request):
     # 关闭连接
     engine.close()
     if exec_result.error:
-        result = {"status": 1, "msg": exec_result.error}
+        result = {"status": 1, "msg": "Database account or schema operation failed."}
         return HttpResponse(json.dumps(result), content_type="application/json")
     # 保存到数据库
     else:
@@ -301,7 +305,9 @@ def lock(request):
         user_host=user_host, is_locked=is_locked
     )
     if exec_result.error:
-        return JsonResponse({"status": 1, "msg": exec_result.error})
+        return JsonResponse(
+            {"status": 1, "msg": "Database account or schema operation failed."}
+        )
     return JsonResponse({"status": 0, "msg": "", "data": []})
 
 
@@ -336,7 +342,9 @@ def delete(request):
     # 关闭连接
     engine.close()
     if exec_result.error:
-        return JsonResponse({"status": 1, "msg": exec_result.error})
+        return JsonResponse(
+            {"status": 1, "msg": "Database account or schema operation failed."}
+        )
     # 删除数据库对应记录
     else:
         InstanceAccount.objects.filter(

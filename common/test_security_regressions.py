@@ -337,3 +337,16 @@ def test_two_factor_save_failure_hides_exception(mocker, module_name, class_name
     result = authenticator.save("synthetic")
     assert result["status"] == 1
     assert "secret-canary" not in json.dumps(result)
+
+
+def test_mongo_write_failure_does_not_return_internal_traceback():
+    engine = MongoEngine()
+    collection = Mock()
+    collection.insert_one.side_effect = RuntimeError("secret-canary")
+    engine.get_connection = Mock(return_value={"test": {"items": collection}})
+    success, message, count = engine._execute_shell_sql(
+        'db.items.insertOne({"x":1})', "test"
+    )
+    assert not success
+    assert count == 0
+    assert message == "MongoDB operation failed"

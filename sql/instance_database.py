@@ -122,7 +122,9 @@ def create(request):
     # 关闭连接
     engine.close()
     if exec_result.error:
-        return JsonResponse({"status": 1, "msg": exec_result.error})
+        return JsonResponse(
+            {"status": 1, "msg": "Database account or schema operation failed."}
+        )
     # 保存到数据库
     else:
         InstanceDatabase.objects.create(

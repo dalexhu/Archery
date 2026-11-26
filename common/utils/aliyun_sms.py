@@ -41,7 +41,7 @@ class AliyunSMS:
             response = client.send_sms_with_options(send_sms_request, runtime)
             if response.body.code != "OK":
                 result["status"] = 1
-                result["msg"] = response.body.message
+                result["msg"] = "SMS delivery failed"
         except Exception as e:
             result["status"] = 1
             result["msg"] = "Operation failed; contact an administrator."

@@ -544,7 +544,13 @@ def archive_switch(request):
         ArchiveConfig(id=archive_id, state=state).save(update_fields=["state"])
         return JsonResponse({"status": 0, "msg": "ok", "data": {}})
     except Exception as msg:
-        return JsonResponse({"status": 1, "msg": "Operation failed; contact an administrator.", "data": {}})
+        return JsonResponse(
+            {
+                "status": 1,
+                "msg": "Operation failed; contact an administrator.",
+                "data": {},
+            }
+        )
 
 
 @permission_required("sql.archive_mgt", raise_exception=True)

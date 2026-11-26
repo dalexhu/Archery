@@ -40,7 +40,7 @@ class TencentSMS:
             resp = client.SendSms(req)
             if resp.SendStatusSet[0].Code != "Ok":
                 result["status"] = 1
-                result["msg"] = resp.SendStatusSet[0].Message
+                result["msg"] = "SMS delivery failed"
         except TencentCloudSDKException as e:
             result["status"] = 1
             result["msg"] = "Operation failed; contact an administrator."

@@ -24,7 +24,7 @@ class TwoFactorAuthBase:
                 user=self.user, auth_type=auth_type
             ).delete()
         except TwoFactorAuthConfig.DoesNotExist as e:
-            result = {"status": 0, "msg": str(e)}
+            result = {"status": 0, "msg": "ok"}
         return result
 
     @property
