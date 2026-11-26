@@ -1601,7 +1601,10 @@ class TestDataDictionary(TestCase):
         }
         r = self.client.get(path="/data_dictionary/table_list/", data=data)
         self.assertEqual(r.status_code, 200)
-        self.assertDictEqual(json.loads(r.content), {"msg": "test error", "status": 1})
+        self.assertDictEqual(
+            json.loads(r.content),
+            {"msg": "Operation failed; contact an administrator.", "status": 1},
+        )
 
     @patch("sql.data_dictionary.get_engine")
     def test_table_info(self, _get_engine):
@@ -1693,7 +1696,10 @@ class TestDataDictionary(TestCase):
         }
         r = self.client.get(path="/data_dictionary/table_info/", data=data)
         self.assertEqual(r.status_code, 200)
-        self.assertDictEqual(json.loads(r.content), {"msg": "test error", "status": 1})
+        self.assertDictEqual(
+            json.loads(r.content),
+            {"msg": "Operation failed; contact an administrator.", "status": 1},
+        )
 
     # ===== 视图/触发器/存储过程/函数/事件 测试 =====
     @patch("sql.data_dictionary.get_engine")

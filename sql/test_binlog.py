@@ -574,7 +574,7 @@ def test_my2sql_exception_during_execution(
     r = client_with_super_user.post("/binlog/my2sql/", data=data)
     result = json.loads(r.content)
     assert result["status"] == 1
-    assert "命令执行失败" in result["msg"]
+    assert "Operation failed" in result["msg"]
 
 
 @patch("sql.binlog.async_task")

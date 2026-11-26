@@ -271,7 +271,8 @@ def test_describe_table_structure_exception(monkeypatch):
     )
 
     assert result["status"] == 1
-    assert "boom" in result["msg"]
+    assert "boom" not in result["msg"]
+    assert "Operation failed" in result["msg"]
 
 
 @pytest.mark.django_db

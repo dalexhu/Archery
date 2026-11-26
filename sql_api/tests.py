@@ -566,7 +566,10 @@ class TestWorkflow(APITestCase):
         _get_engine.side_effect = RuntimeError("RuntimeError")
         r = self.client.post("/api/v1/workflow/sqlcheck/", json_data, format="json")
         print(json.loads(r.content))
-        self.assertDictEqual(json.loads(r.content), {"errors": "RuntimeError"})
+        self.assertDictEqual(
+            json.loads(r.content),
+            {"errors": "Operation failed; contact an administrator."},
+        )
 
     @patch("sql_api.api_workflow.get_engine")
     def test_check(self, _get_engine):

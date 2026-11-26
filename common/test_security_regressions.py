@@ -269,11 +269,16 @@ def test_rollback_rejects_non_integer_id_before_any_file_access(mocker, workflow
 
 
 def test_cloud_authentication_failure_does_not_expose_exception(mocker):
-    from common.utils.aliyun_sdk import Aliyun
+    import importlib.util
+    from pathlib import Path
 
-    mocker.patch(
-        "common.utils.aliyun_sdk.AcsClient", side_effect=RuntimeError("secret-canary")
+    spec = importlib.util.spec_from_file_location(
+        "security_aliyun", Path(__file__).parent / "utils" / "aliyun_sdk.py"
     )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    Aliyun = module.Aliyun
+    mocker.patch.object(module, "AcsClient", side_effect=RuntimeError("secret-canary"))
     rds = SimpleNamespace(
         rds_dbinstanceid="test",
         ak=SimpleNamespace(raw_key_id="id", raw_key_secret="secret"),
@@ -333,7 +338,8 @@ def test_two_factor_save_failure_hides_exception(mocker, module_name, class_name
     mocker.patch.object(
         module.transaction, "atomic", side_effect=RuntimeError("secret-canary")
     )
-    authenticator = getattr(module, class_name)(user=Mock())
+    authenticator = object.__new__(getattr(module, class_name))
+    authenticator.user = Mock()
     result = authenticator.save("synthetic")
     assert result["status"] == 1
     assert "secret-canary" not in json.dumps(result)

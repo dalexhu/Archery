@@ -88,7 +88,11 @@ def list_instance_resources(
             result["data"] = fork_type
             return result
         else:
-            raise TypeError(_("不支持的资源类型或者参数不完整！"))
+            return {
+                "status": 1,
+                "msg": _("不支持的资源类型或者参数不完整！"),
+                "data": [],
+            }
     except Exception as msg:
         result["status"] = 1
         result["msg"] = "Operation failed; contact an administrator."
