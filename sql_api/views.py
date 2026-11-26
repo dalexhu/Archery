@@ -1,4 +1,6 @@
 # -*- coding: UTF-8 -*-
+
+from django.utils.translation import gettext as security_message
 import django_q
 import platform
 import sys
@@ -63,7 +65,7 @@ def debug(request):
             "used_memory_human": full_redis_info.get("used_memory_human"),
         }
     except Exception as e:
-        redis_info = "Operation failed; contact an administrator."
+        redis_info = security_message("Operation failed; contact an administrator.")
         full_redis_info = redis_info
 
     # django_q
@@ -111,7 +113,7 @@ def debug(request):
             "q_broker_stats": q_broker_stats,
         }
     except Exception as e:
-        django_q_info = "Operation failed; contact an administrator."
+        django_q_info = security_message("Operation failed; contact an administrator.")
 
     # Inception和goInception信息
     go_inception_host = sys_config.get("go_inception_host")
@@ -150,7 +152,9 @@ def debug(request):
             "ghost_on": full_goinception_info.get("ghost_on"),
         }
     except Exception as e:
-        goinception_info = "Operation failed; contact an administrator."
+        goinception_info = security_message(
+            "Operation failed; contact an administrator."
+        )
         full_goinception_info = goinception_info
 
     # 备份库
@@ -166,7 +170,7 @@ def debug(request):
         cursor.execute("select 1;")
         backup_info = "normal"
     except Exception as e:
-        backup_info = "Operation failed; contact an administrator."
+        backup_info = security_message("Operation failed; contact an administrator.")
 
     # PACKAGES
     installed_packages_list = sorted(
@@ -232,4 +236,6 @@ def mirage(request):
         mg_password.encrypt()
         return JsonResponse({"msg": "ok"})
     except Exception as msg:
-        return JsonResponse({"msg": "Operation failed; contact an administrator."})
+        return JsonResponse(
+            {"msg": security_message("Operation failed; contact an administrator.")}
+        )

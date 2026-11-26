@@ -1,4 +1,6 @@
 # -*- coding: UTF-8 -*-
+
+from django.utils.translation import gettext as security_message
 import MySQLdb
 import simplejson as json
 from django.contrib.auth.decorators import permission_required
@@ -111,7 +113,10 @@ def create(request):
     engine.close()
     if exec_result.error:
         return JsonResponse(
-            {"status": 1, "msg": "Database account or schema operation failed."}
+            {
+                "status": 1,
+                "msg": security_message("Database account or schema operation failed."),
+            }
         )
 
     # 保存到数据库
@@ -217,7 +222,10 @@ def grant(request):
     engine.close()
     if exec_result.error:
         return JsonResponse(
-            {"status": 1, "msg": "Database account or schema operation failed."}
+            {
+                "status": 1,
+                "msg": security_message("Database account or schema operation failed."),
+            }
         )
     grant_sql = exec_result.full_sql
     return JsonResponse({"status": 0, "msg": "", "data": grant_sql})
@@ -267,7 +275,10 @@ def reset_pwd(request):
     # 关闭连接
     engine.close()
     if exec_result.error:
-        result = {"status": 1, "msg": "Database account or schema operation failed."}
+        result = {
+            "status": 1,
+            "msg": security_message("Database account or schema operation failed."),
+        }
         return HttpResponse(json.dumps(result), content_type="application/json")
     # 保存到数据库
     else:
@@ -306,7 +317,10 @@ def lock(request):
     )
     if exec_result.error:
         return JsonResponse(
-            {"status": 1, "msg": "Database account or schema operation failed."}
+            {
+                "status": 1,
+                "msg": security_message("Database account or schema operation failed."),
+            }
         )
     return JsonResponse({"status": 0, "msg": "", "data": []})
 
@@ -343,7 +357,10 @@ def delete(request):
     engine.close()
     if exec_result.error:
         return JsonResponse(
-            {"status": 1, "msg": "Database account or schema operation failed."}
+            {
+                "status": 1,
+                "msg": security_message("Database account or schema operation failed."),
+            }
         )
     # 删除数据库对应记录
     else:

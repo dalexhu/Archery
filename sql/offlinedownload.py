@@ -181,7 +181,7 @@ class OffLineDownLoad(EngineBase):
             sql_list, full_sql = get_single_export_statement(full_sql, instance.db_type)
         except Exception as e:
             sql_list = []
-            parse_error = str(e)
+            parse_error = _("Operation failed; contact an administrator.")
         else:
             parse_error = ""
 
@@ -223,7 +223,7 @@ class OffLineDownLoad(EngineBase):
                 stage="自动审核失败",
                 errlevel=2,
                 stagestatus="检查未通过！",
-                errormessage=str(e),
+                errormessage=_("Operation failed; contact an administrator."),
                 affected_rows=0,
                 sql=sql,
             )
@@ -289,7 +289,7 @@ class OffLineDownLoad(EngineBase):
                 stage="自动审核失败",
                 errlevel=2,
                 stagestatus="检查未通过！",
-                errormessage=str(e),
+                errormessage=_("Operation failed; contact an administrator."),
                 affected_rows=0,
                 sql=sql,
             )

@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
-import traceback
+import logging
+from django.utils.translation import gettext as _
 import simplejson as json
 import datetime
 
@@ -7,6 +8,8 @@ from common.utils.aliyun_sdk import Aliyun
 from sql.models import AliyunRdsConfig
 from sql.engines.mysql import MysqlEngine
 from sql.engines.models import ResultSet
+
+logger = logging.getLogger("default")
 
 
 class AliyunRDS(MysqlEngine):
@@ -73,10 +76,8 @@ class AliyunRDS(MysqlEngine):
 
             result.rows = kill_result
         except Exception as e:
-            logger.warning(
-                f"aliyun rds语句执行报错，语句：{kill_sql}，错误信息{traceback.format_exc()}"
-            )
-            result.error = str(e)
+            logger.warning("Cloud session operation failed (%s)", type(e).__name__)
+            result.error = _("Operation failed; contact an administrator.")
         return result
 
     def tablespace(self, offset, limit, schema_search=""):

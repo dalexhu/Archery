@@ -55,3 +55,21 @@ msgstr "执行有异常"
 
 msgid "workflow_finish_manual"
 msgstr "已手动完成"
+
+msgid "Operation failed; contact an administrator."
+msgstr "操作失败，请联系管理员。"
+
+msgid "Database account or schema operation failed."
+msgstr "数据库账号或结构操作失败。"
+
+msgid "Email delivery failed"
+msgstr "邮件发送失败"
+
+msgid "Cloud authentication failed"
+msgstr "云服务认证失败"
+
+msgid "MongoDB operation failed"
+msgstr "MongoDB 操作失败"
+
+msgid "SMS delivery failed"
+msgstr "短信发送失败"

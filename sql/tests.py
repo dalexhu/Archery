@@ -1,3 +1,4 @@
+from django.utils.translation import gettext as security_message
 import json
 from datetime import timedelta, datetime
 from unittest.mock import MagicMock, patch, ANY, Mock
@@ -1603,7 +1604,10 @@ class TestDataDictionary(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertDictEqual(
             json.loads(r.content),
-            {"msg": "Operation failed; contact an administrator.", "status": 1},
+            {
+                "msg": security_message("Operation failed; contact an administrator."),
+                "status": 1,
+            },
         )
 
     @patch("sql.data_dictionary.get_engine")
@@ -1698,7 +1702,10 @@ class TestDataDictionary(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertDictEqual(
             json.loads(r.content),
-            {"msg": "Operation failed; contact an administrator.", "status": 1},
+            {
+                "msg": security_message("Operation failed; contact an administrator."),
+                "status": 1,
+            },
         )
 
     # ===== 视图/触发器/存储过程/函数/事件 测试 =====

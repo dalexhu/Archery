@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+
+from django.utils.translation import gettext as security_message
 from tencentcloud.common import credential
 from tencentcloud.common.exception.tencent_cloud_sdk_exception import (
     TencentCloudSDKException,
@@ -40,10 +42,12 @@ class TencentSMS:
             resp = client.SendSms(req)
             if resp.SendStatusSet[0].Code != "Ok":
                 result["status"] = 1
-                result["msg"] = "SMS delivery failed"
+                result["msg"] = security_message("SMS delivery failed")
         except TencentCloudSDKException as e:
             result["status"] = 1
-            result["msg"] = "Operation failed; contact an administrator."
+            result["msg"] = security_message(
+                "Operation failed; contact an administrator."
+            )
             logger.error(str(e))
             logger.error(traceback.format_exc())
 

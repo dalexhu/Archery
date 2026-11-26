@@ -1,3 +1,4 @@
+from django.utils.translation import gettext as security_message
 from django.utils.translation import gettext as _
 from common.utils.aliyun_sms import AliyunSMS
 from django_redis import get_redis_connection
@@ -93,7 +94,9 @@ class SMS(TwoFactorAuthBase):
                 )
         except Exception as msg:
             result["status"] = 1
-            result["msg"] = "Operation failed; contact an administrator."
+            result["msg"] = security_message(
+                "Operation failed; contact an administrator."
+            )
             logger.error(traceback.format_exc())
 
         return result

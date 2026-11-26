@@ -1,3 +1,4 @@
+from django.utils.translation import gettext as security_message
 from types import SimpleNamespace
 
 import pytest
@@ -272,7 +273,9 @@ def test_describe_table_structure_exception(monkeypatch):
 
     assert result["status"] == 1
     assert "boom" not in result["msg"]
-    assert "Operation failed" in result["msg"]
+    assert (
+        security_message("Operation failed; contact an administrator.") in result["msg"]
+    )
 
 
 @pytest.mark.django_db

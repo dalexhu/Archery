@@ -1,4 +1,6 @@
 # -*- coding: UTF-8 -*-
+
+from django.utils.translation import gettext as security_message
 from django.utils.translation import gettext as _
 
 import logging
@@ -95,7 +97,7 @@ def list_instance_resources(
             }
     except Exception as msg:
         result["status"] = 1
-        result["msg"] = "Operation failed; contact an administrator."
+        result["msg"] = security_message("Operation failed; contact an administrator.")
         return result
 
     if resource.error:
@@ -133,7 +135,7 @@ def describe_table_structure(
         result["data"] = query_result.__dict__
     except Exception as msg:
         result["status"] = 1
-        result["msg"] = "Operation failed; contact an administrator."
+        result["msg"] = security_message("Operation failed; contact an administrator.")
 
     if result["data"].get("error"):
         result["status"] = 1

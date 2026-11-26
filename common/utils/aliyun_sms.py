@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+
+from django.utils.translation import gettext as security_message
 from alibabacloud_dysmsapi20170525.client import Client as Dysmsapi20170525Client
 from alibabacloud_dysmsapi20170525 import models as dysmsapi_20170525_models
 from alibabacloud_tea_openapi import models as open_api_models
@@ -41,10 +43,12 @@ class AliyunSMS:
             response = client.send_sms_with_options(send_sms_request, runtime)
             if response.body.code != "OK":
                 result["status"] = 1
-                result["msg"] = "SMS delivery failed"
+                result["msg"] = security_message("SMS delivery failed")
         except Exception as e:
             result["status"] = 1
-            result["msg"] = "Operation failed; contact an administrator."
+            result["msg"] = security_message(
+                "Operation failed; contact an administrator."
+            )
             logger.error(str(e))
             logger.error(traceback.format_exc())
 

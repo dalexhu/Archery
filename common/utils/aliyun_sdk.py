@@ -1,4 +1,6 @@
 # -*- coding: UTF-8 -*-
+
+from django.utils.translation import gettext as security_message
 import datetime
 
 from aliyunsdkcore.client import AcsClient
@@ -21,7 +23,9 @@ class Aliyun(object):
             secret = rds.ak.raw_key_secret
             self.clt = AcsClient(ak=ak, secret=secret)
         except Exception:
-            raise RuntimeError("Cloud authentication failed") from None
+            raise RuntimeError(
+                security_message("Cloud authentication failed")
+            ) from None
 
     def request_api(self, request, *values):
         if values:

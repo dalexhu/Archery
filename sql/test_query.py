@@ -1,3 +1,4 @@
+from django.utils.translation import gettext as security_message
 from types import SimpleNamespace
 
 import pytest
@@ -262,7 +263,7 @@ def test_generate_sql_returns_exception_message(monkeypatch):
 
     assert _json_content(response) == {
         "status": 1,
-        "msg": "Operation failed; contact an administrator.",
+        "msg": security_message("Operation failed; contact an administrator."),
         "data": "",
     }
 

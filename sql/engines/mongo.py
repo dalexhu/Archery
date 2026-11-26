@@ -1,4 +1,6 @@
 # -*- coding: UTF-8 -*-
+
+from django.utils.translation import gettext as security_message
 import re
 import time
 import pymongo
@@ -772,7 +774,7 @@ class MongoEngine(EngineBase):
             logger.warning(
                 f"mongo pymongo执行报错，语句：{sql}，错误信息{traceback.format_exc()}"
             )
-            return False, "MongoDB operation failed", 0
+            return False, security_message("MongoDB operation failed"), 0
 
     def execute_workflow(self, workflow):
         """执行上线单，返回Review set"""

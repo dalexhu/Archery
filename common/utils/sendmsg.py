@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+from django.utils.translation import gettext as security_message
+
 import re
 import email
 import smtplib
@@ -130,7 +132,7 @@ class MsgSender(object):
             )
             return "success"
         except Exception:
-            errmsg = "Email delivery failed"
+            errmsg = security_message("Email delivery failed")
             logger.error(errmsg)
             return errmsg
 

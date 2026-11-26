@@ -1,5 +1,7 @@
 """Exercise the high-priority CodeQL findings with synthetic data and mocks."""
 
+from django.utils.translation import gettext as security_message
+
 import json
 import logging
 import subprocess
@@ -294,8 +296,9 @@ def test_cloud_authentication_failure_does_not_expose_exception(mocker):
         rds_dbinstanceid="test",
         ak=SimpleNamespace(raw_key_id="id", raw_key_secret="secret"),
     )
-    with pytest.raises(RuntimeError, match="^Cloud authentication failed$") as error:
+    with pytest.raises(RuntimeError) as error:
         Aliyun(rds)
+    assert str(error.value) == security_message("Cloud authentication failed")
     assert error.value.__suppress_context__
 
 
@@ -308,7 +311,7 @@ def test_email_failure_does_not_return_traceback_or_secret(mocker, caplog):
     )
     with caplog.at_level(logging.ERROR):
         result = sender.send_email("test", "synthetic", ["recipient@example.invalid"])
-    assert result == "Email delivery failed"
+    assert result == security_message("Email delivery failed")
     assert "secret-canary" not in caplog.text
     assert "Traceback" not in result
 
@@ -335,7 +338,9 @@ def test_resource_service_hides_unexpected_engine_errors(mocker, operation):
         )
     assert result["status"] == 1
     assert "secret-canary" not in json.dumps(result)
-    assert "Operation failed" in result["msg"]
+    assert (
+        security_message("Operation failed; contact an administrator.") in result["msg"]
+    )
 
 
 @pytest.mark.parametrize(
@@ -366,7 +371,7 @@ def test_mongo_write_failure_does_not_return_internal_traceback():
     )
     assert not success
     assert count == 0
-    assert message == "MongoDB operation failed"
+    assert message == security_message("MongoDB operation failed")
 
 
 @pytest.mark.parametrize("serializer_name", ["UserSerializer", "UserDetailSerializer"])
@@ -382,3 +387,79 @@ def test_password_policy_messages_remain_available(mocker, serializer_name):
     )
     with pytest.raises(APIValidationError, match="Password policy failure"):
         getattr(serializers, serializer_name)().validate_password("synthetic")
+
+
+@pytest.mark.parametrize("language", ["en", "zh-hans"])
+def test_cloud_session_failure_is_safe_and_localized(mocker, caplog, language):
+    import importlib.util
+    from pathlib import Path
+    from django.utils.translation import override
+
+    spec = importlib.util.spec_from_file_location(
+        "security_rds", Path(__file__).parents[1] / "sql/engines/cloud/aliyun_rds.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    mocker.patch.dict(
+        sys.modules, {"common.utils.aliyun_sdk": SimpleNamespace(Aliyun=Mock())}
+    )
+    spec.loader.exec_module(module)
+    mocker.patch.object(
+        module.AliyunRdsConfig.objects,
+        "get",
+        side_effect=RuntimeError("secret-canary /private/path"),
+    )
+    engine = object.__new__(module.AliyunRDS)
+    engine.instance_name = "synthetic"
+    with override(language), caplog.at_level(logging.WARNING, logger="default"):
+        result = engine.kill([123])
+        assert result.error == security_message(
+            "Operation failed; contact an administrator."
+        )
+    assert "secret-canary" not in caplog.text
+    assert "RuntimeError" in caplog.text
+
+
+@pytest.mark.parametrize("phase", ["parse", "check", "count"])
+def test_export_review_unexpected_failures_are_not_diagnostics(mocker, phase):
+    from sql import offlinedownload
+
+    mocker.patch.object(offlinedownload, "SysConfig").return_value.get.side_effect = (
+        lambda key, default=None: default
+    )
+    engine = mocker.patch.object(offlinedownload, "get_engine").return_value
+    engine.query_check.return_value = {"bad_query": False, "filtered_sql": "select 1"}
+    if phase == "parse":
+        mocker.patch.object(
+            offlinedownload,
+            "get_single_export_statement",
+            side_effect=RuntimeError("secret-canary"),
+        )
+    elif phase == "check":
+        engine.query_check.side_effect = RuntimeError("secret-canary")
+    else:
+        engine.query.side_effect = RuntimeError("secret-canary")
+    workflow = SimpleNamespace(
+        sql_content="select 1", db_type="mysql", db_name="synthetic"
+    )
+    result = offlinedownload.OffLineDownLoad().pre_count_check(workflow)
+    assert result.error_count == 1
+    assert result.rows[0].errormessage == security_message(
+        "Operation failed; contact an administrator."
+    )
+
+
+@pytest.mark.parametrize(
+    "language,expected", [("en", "Email delivery failed"), ("zh-hans", "邮件发送失败")]
+)
+def test_safe_email_failure_follows_request_language(mocker, language, expected):
+    from django.utils.translation import override
+
+    sender = sendmsg.MsgSender(server="invalid", user="test@example.invalid")
+    mocker.patch.object(
+        sendmsg.smtplib, "SMTP", side_effect=RuntimeError("secret-canary")
+    )
+    with override(language):
+        assert (
+            sender.send_email("synthetic", "synthetic", ["test@example.invalid"])
+            == expected
+        )

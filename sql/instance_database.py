@@ -6,6 +6,8 @@
 @time: 2019/09/19
 """
 
+from django.utils.translation import gettext as security_message
+
 import simplejson as json
 from django.contrib.auth.decorators import permission_required
 from django.http import JsonResponse, HttpResponse
@@ -123,7 +125,10 @@ def create(request):
     engine.close()
     if exec_result.error:
         return JsonResponse(
-            {"status": 1, "msg": "Database account or schema operation failed."}
+            {
+                "status": 1,
+                "msg": security_message("Database account or schema operation failed."),
+            }
         )
     # 保存到数据库
     else:

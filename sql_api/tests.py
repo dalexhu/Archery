@@ -1,3 +1,4 @@
+from django.utils.translation import gettext as security_message
 from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock
 
@@ -568,7 +569,7 @@ class TestWorkflow(APITestCase):
         print(json.loads(r.content))
         self.assertDictEqual(
             json.loads(r.content),
-            {"errors": "Operation failed; contact an administrator."},
+            {"errors": security_message("Operation failed; contact an administrator.")},
         )
 
     @patch("sql_api.api_workflow.get_engine")

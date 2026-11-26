@@ -1,3 +1,4 @@
+from django.utils.translation import gettext as security_message
 from django.utils.translation import pgettext_lazy
 from django.utils.translation import gettext as _
 import logging
@@ -277,7 +278,11 @@ class InstanceResource(views.APIView):
                 )
         except Exception as msg:
             raise serializers.ValidationError(
-                {"errors": "Operation failed; contact an administrator."}
+                {
+                    "errors": security_message(
+                        "Operation failed; contact an administrator."
+                    )
+                }
             )
         else:
             if resource.error:

@@ -1,4 +1,6 @@
 # -*- coding: UTF-8 -*-
+
+from django.utils.translation import gettext as security_message
 import MySQLdb
 import logging
 import os
@@ -258,7 +260,7 @@ def my2sql(request):
     except Exception as e:
         logger.error(traceback.format_exc())
         result["status"] = 1
-        result["msg"] = "Operation failed; contact an administrator."
+        result["msg"] = security_message("Operation failed; contact an administrator.")
     finally:
         if temp_output_dir:
             shutil.rmtree(temp_output_dir, ignore_errors=True)

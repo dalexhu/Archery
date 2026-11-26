@@ -1,4 +1,6 @@
 # -*- coding: UTF-8 -*-
+
+from django.utils.translation import gettext as security_message
 import logging
 import traceback
 from itertools import chain
@@ -177,7 +179,10 @@ def addrelation(request):
         result = {"status": 0, "msg": "ok"}
     except Exception as e:
         logger.error(traceback.format_exc())
-        result = {"status": 1, "msg": "Operation failed; contact an administrator."}
+        result = {
+            "status": 1,
+            "msg": security_message("Operation failed; contact an administrator."),
+        }
     return HttpResponse(json.dumps(result), content_type="application/json")
 
 
@@ -240,7 +245,7 @@ def changeauditors(request):
         Audit.change_settings(group_id, workflow_type, ",".join(audit_auth_groups))
     except Exception as msg:
         logger.error(traceback.format_exc())
-        result["msg"] = "Operation failed; contact an administrator."
+        result["msg"] = security_message("Operation failed; contact an administrator.")
         result["status"] = 1
 
     # 返回结果

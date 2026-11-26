@@ -1,3 +1,4 @@
+from django.utils.translation import gettext as security_message
 from django.utils.translation import gettext as _, pgettext_lazy
 from rest_framework import serializers
 from sql.models import (
@@ -262,7 +263,11 @@ class AliyunRdsSerializer(serializers.ModelSerializer):
         except Exception as e:
             logger.error(f"创建AliyunRds报错，错误信息：{traceback.format_exc()}")
             raise serializers.ValidationError(
-                {"errors": "Operation failed; contact an administrator."}
+                {
+                    "errors": security_message(
+                        "Operation failed; contact an administrator."
+                    )
+                }
             )
         else:
             return rds

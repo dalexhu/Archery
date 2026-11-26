@@ -6,6 +6,8 @@
 @time: 2019/03/04
 """
 
+from django.utils.translation import gettext as security_message
+
 import MySQLdb
 import re
 
@@ -85,7 +87,7 @@ def optimize_sqladvisor(request):
         result["data"] = localize_sqladvisor_report(result["raw_report"])
     except RuntimeError as e:
         result["status"] = 1
-        result["msg"] = "Operation failed; contact an administrator."
+        result["msg"] = security_message("Operation failed; contact an administrator.")
     return HttpResponse(json.dumps(result), content_type="application/json")
 
 
@@ -147,7 +149,7 @@ def optimize_soar(request):
         result["data"] = stdout if stdout else stderr
     except RuntimeError as e:
         result["status"] = 1
-        result["msg"] = "Operation failed; contact an administrator."
+        result["msg"] = security_message("Operation failed; contact an administrator.")
     return HttpResponse(json.dumps(result), content_type="application/json")
 
 

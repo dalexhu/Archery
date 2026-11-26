@@ -6,6 +6,8 @@
 @time: 2020/01/10
 """
 
+from django.utils.translation import gettext as security_message
+
 import logging
 import os
 import re
@@ -547,7 +549,7 @@ def archive_switch(request):
         return JsonResponse(
             {
                 "status": 1,
-                "msg": "Operation failed; contact an administrator.",
+                "msg": security_message("Operation failed; contact an administrator."),
                 "data": {},
             }
         )

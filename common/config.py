@@ -1,4 +1,6 @@
 # -*- coding: UTF-8 -*-
+
+from django.utils.translation import gettext as security_message
 import logging
 import traceback
 
@@ -86,7 +88,9 @@ class SysConfig(object):
         except Exception as e:
             logger.error(traceback.format_exc())
             result["status"] = 1
-            result["msg"] = "Operation failed; contact an administrator."
+            result["msg"] = security_message(
+                "Operation failed; contact an administrator."
+            )
         finally:
             self.get_all_config()
         return result

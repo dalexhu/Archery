@@ -1,3 +1,4 @@
+from django.utils.translation import gettext as _
 from unittest.mock import patch, MagicMock, Mock, mock_open
 from django.test import TestCase, Client
 from django.conf import settings
@@ -203,7 +204,10 @@ class TestOfflineDownload(TestCase):
         result = OffLineDownLoad().pre_count_check(self.workflow)
 
         self.assertEqual(result.error_count, 1)
-        self.assertEqual(result.rows[0].errormessage, "check failed")
+        self.assertEqual(
+            result.rows[0].errormessage,
+            _("Operation failed; contact an administrator."),
+        )
         mock_engine.query.assert_not_called()
 
     @patch("sql.offlinedownload.get_engine")
@@ -253,7 +257,10 @@ class TestOfflineDownload(TestCase):
         result = OffLineDownLoad().pre_count_check(self.workflow)
 
         self.assertEqual(result.error_count, 1)
-        self.assertEqual(result.rows[0].errormessage, "count failed")
+        self.assertEqual(
+            result.rows[0].errormessage,
+            _("Operation failed; contact an administrator."),
+        )
 
     @patch("sql.offlinedownload.get_engine")
     def test_pre_count_check_result_set_error_after_fallback(self, mock_get_engine):

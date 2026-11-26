@@ -1,4 +1,6 @@
 # -*- coding: UTF-8 -*-
+
+from django.utils.translation import gettext as security_message
 import datetime
 import logging
 import re
@@ -171,7 +173,7 @@ def generate_sql(request):
         )
     except Exception as msg:
         result["status"] = 1
-        result["msg"] = "Operation failed; contact an administrator."
+        result["msg"] = security_message("Operation failed; contact an administrator.")
     return HttpResponse(json.dumps(result), content_type="application/json")
 
 

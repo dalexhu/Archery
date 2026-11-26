@@ -4,6 +4,8 @@ binlog.py 单元测试
 覆盖 binlog_list、del_binlog、my2sql、my2sql_file 四个函数
 """
 
+from django.utils.translation import gettext as security_message
+
 import json
 import os
 from unittest.mock import patch, MagicMock, PropertyMock
@@ -574,7 +576,9 @@ def test_my2sql_exception_during_execution(
     r = client_with_super_user.post("/binlog/my2sql/", data=data)
     result = json.loads(r.content)
     assert result["status"] == 1
-    assert "Operation failed" in result["msg"]
+    assert (
+        security_message("Operation failed; contact an administrator.") in result["msg"]
+    )
 
 
 @patch("sql.binlog.async_task")

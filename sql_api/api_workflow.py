@@ -1,3 +1,4 @@
+from django.utils.translation import gettext as security_message
 from django.utils.translation import gettext as _, pgettext_lazy
 import datetime
 import logging
@@ -73,7 +74,11 @@ class ExecuteCheck(views.APIView):
             )
         except Exception as e:
             raise serializers.ValidationError(
-                {"errors": "Operation failed; contact an administrator."}
+                {
+                    "errors": security_message(
+                        "Operation failed; contact an administrator."
+                    )
+                }
             )
         check_result.rows = check_result.to_dict()
         serializer_obj = ExecuteCheckResultSerializer(check_result)
