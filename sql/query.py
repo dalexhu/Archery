@@ -171,7 +171,7 @@ def generate_sql(request):
         )
     except Exception as msg:
         result["status"] = 1
-        result["msg"] = str(msg)
+        result["msg"] = "Operation failed; contact an administrator."
     return HttpResponse(json.dumps(result), content_type="application/json")
 
 

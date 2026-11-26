@@ -295,3 +295,45 @@ def test_email_failure_does_not_return_traceback_or_secret(mocker, caplog):
     assert result == "Email delivery failed"
     assert "secret-canary" not in caplog.text
     assert "Traceback" not in result
+
+
+@pytest.mark.parametrize("operation", ["resources", "description"])
+def test_resource_service_hides_unexpected_engine_errors(mocker, operation):
+    from sql.services import resource_service
+
+    mocker.patch.object(
+        resource_service, "_resolve_instance_for_user", return_value=Mock()
+    )
+    mocker.patch.object(
+        resource_service,
+        "get_engine",
+        side_effect=RuntimeError("/private/secret-canary"),
+    )
+    if operation == "resources":
+        result = resource_service.list_instance_resources(
+            Mock(), "database", instance_name="test"
+        )
+    else:
+        result = resource_service.describe_table_structure(
+            Mock(), "test", "db", "table"
+        )
+    assert result["status"] == 1
+    assert "secret-canary" not in json.dumps(result)
+    assert "Operation failed" in result["msg"]
+
+
+@pytest.mark.parametrize(
+    "module_name,class_name",
+    [("common.twofa.sms", "SMS"), ("common.twofa.totp", "TOTP")],
+)
+def test_two_factor_save_failure_hides_exception(mocker, module_name, class_name):
+    import importlib
+
+    module = importlib.import_module(module_name)
+    mocker.patch.object(
+        module.transaction, "atomic", side_effect=RuntimeError("secret-canary")
+    )
+    authenticator = getattr(module, class_name)(user=Mock())
+    result = authenticator.save("synthetic")
+    assert result["status"] == 1
+    assert "secret-canary" not in json.dumps(result)

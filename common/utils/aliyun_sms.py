@@ -44,7 +44,7 @@ class AliyunSMS:
                 result["msg"] = response.body.message
         except Exception as e:
             result["status"] = 1
-            result["msg"] = str(e)
+            result["msg"] = "Operation failed; contact an administrator."
             logger.error(str(e))
             logger.error(traceback.format_exc())
 

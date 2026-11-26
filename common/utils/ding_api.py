@@ -129,4 +129,4 @@ def sync_ding_user(request):
         add_sync_ding_user_schedule()
         return JsonResponse({"status": 0, "msg": f"触发同步成功"})
     except Exception as e:
-        return JsonResponse({"status": 1, "msg": f"触发同步异常:{e}"})
+        return JsonResponse({"status": 1, "msg": "Operation failed; contact an administrator."})

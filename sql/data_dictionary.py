@@ -88,7 +88,7 @@ def table_list(request):
         except Instance.DoesNotExist:
             res = {"status": 1, "msg": "Instance.DoesNotExist"}
         except Exception as e:
-            res = {"status": 1, "msg": str(e)}
+            res = {"status": 1, "msg": "Operation failed; contact an administrator."}
     else:
         res = {"status": 1, "msg": _("非法调用！")}
     return HttpResponse(
@@ -138,7 +138,7 @@ def table_info(request):
         except Instance.DoesNotExist:
             res = {"status": 1, "msg": "Instance.DoesNotExist"}
         except Exception as e:
-            res = {"status": 1, "msg": str(e)}
+            res = {"status": 1, "msg": "Operation failed; contact an administrator."}
     else:
         res = {"status": 1, "msg": _("非法调用！")}
     return HttpResponse(
@@ -285,7 +285,7 @@ def _dict_list(request, db_type_required, engine_method):
         except Instance.DoesNotExist:
             res = {"status": 1, "msg": "Instance.DoesNotExist"}
         except Exception as e:
-            res = {"status": 1, "msg": str(e)}
+            res = {"status": 1, "msg": "Operation failed; contact an administrator."}
     else:
         res = {"status": 1, "msg": _("非法调用！")}
     return HttpResponse(
@@ -330,7 +330,7 @@ def _dict_detail(request, db_type_required, engine_method, name_param, engine_kw
         except Instance.DoesNotExist:
             res = {"status": 1, "msg": "Instance.DoesNotExist"}
         except Exception as e:
-            res = {"status": 1, "msg": str(e)}
+            res = {"status": 1, "msg": "Operation failed; contact an administrator."}
     else:
         res = {"status": 1, "msg": _("非法调用！")}
     return HttpResponse(

@@ -72,7 +72,9 @@ class ExecuteCheck(views.APIView):
                 db_name=db_name, sql=request.data["full_sql"].strip()
             )
         except Exception as e:
-            raise serializers.ValidationError({"errors": f"{e}"})
+            raise serializers.ValidationError(
+                {"errors": "Operation failed; contact an administrator."}
+            )
         check_result.rows = check_result.to_dict()
         serializer_obj = ExecuteCheckResultSerializer(check_result)
         return Response(serializer_obj.data)

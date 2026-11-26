@@ -93,7 +93,7 @@ class SMS(TwoFactorAuthBase):
                 )
         except Exception as msg:
             result["status"] = 1
-            result["msg"] = str(msg)
+            result["msg"] = "Operation failed; contact an administrator."
             logger.error(traceback.format_exc())
 
         return result

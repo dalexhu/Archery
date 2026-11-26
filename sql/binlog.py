@@ -258,7 +258,7 @@ def my2sql(request):
     except Exception as e:
         logger.error(traceback.format_exc())
         result["status"] = 1
-        result["msg"] = str(e)
+        result["msg"] = "Operation failed; contact an administrator."
     finally:
         if temp_output_dir:
             shutil.rmtree(temp_output_dir, ignore_errors=True)

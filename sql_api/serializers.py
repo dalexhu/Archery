@@ -261,7 +261,9 @@ class AliyunRdsSerializer(serializers.ModelSerializer):
                 rds = AliyunRdsConfig.objects.create(ak=ak, **validated_data)
         except Exception as e:
             logger.error(f"创建AliyunRds报错，错误信息：{traceback.format_exc()}")
-            raise serializers.ValidationError({"errors": str(e)})
+            raise serializers.ValidationError(
+                {"errors": "Operation failed; contact an administrator."}
+            )
         else:
             return rds
 

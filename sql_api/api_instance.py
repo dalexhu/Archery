@@ -276,7 +276,9 @@ class InstanceResource(views.APIView):
                     {"errors": _("不支持的资源类型或者参数不完整！")}
                 )
         except Exception as msg:
-            raise serializers.ValidationError({"errors": msg})
+            raise serializers.ValidationError(
+                {"errors": "Operation failed; contact an administrator."}
+            )
         else:
             if resource.error:
                 raise serializers.ValidationError({"errors": resource.error})

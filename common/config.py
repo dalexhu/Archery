@@ -86,7 +86,7 @@ class SysConfig(object):
         except Exception as e:
             logger.error(traceback.format_exc())
             result["status"] = 1
-            result["msg"] = str(e)
+            result["msg"] = "Operation failed; contact an administrator."
         finally:
             self.get_all_config()
         return result

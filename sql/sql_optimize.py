@@ -85,7 +85,7 @@ def optimize_sqladvisor(request):
         result["data"] = localize_sqladvisor_report(result["raw_report"])
     except RuntimeError as e:
         result["status"] = 1
-        result["msg"] = str(e)
+        result["msg"] = "Operation failed; contact an administrator."
     return HttpResponse(json.dumps(result), content_type="application/json")
 
 
@@ -147,7 +147,7 @@ def optimize_soar(request):
         result["data"] = stdout if stdout else stderr
     except RuntimeError as e:
         result["status"] = 1
-        result["msg"] = str(e)
+        result["msg"] = "Operation failed; contact an administrator."
     return HttpResponse(json.dumps(result), content_type="application/json")
 
 

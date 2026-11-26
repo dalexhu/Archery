@@ -91,7 +91,7 @@ def list_instance_resources(
             raise TypeError(_("不支持的资源类型或者参数不完整！"))
     except Exception as msg:
         result["status"] = 1
-        result["msg"] = str(msg)
+        result["msg"] = "Operation failed; contact an administrator."
         return result
 
     if resource.error:
@@ -129,7 +129,7 @@ def describe_table_structure(
         result["data"] = query_result.__dict__
     except Exception as msg:
         result["status"] = 1
-        result["msg"] = str(msg)
+        result["msg"] = "Operation failed; contact an administrator."
 
     if result["data"].get("error"):
         result["status"] = 1
