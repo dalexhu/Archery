@@ -29,5 +29,5 @@ def get_wx_access_token():
         cache.set("wx_access_token", access_token, timeout=expires_in - 60)
         return access_token
     else:
-        logger.error(f"获取企业微信access_token出错:{resp}")
+        logger.error("获取企业微信access_token出错")
         return None

@@ -150,11 +150,9 @@ class MsgSender(object):
         r = requests.post(url=url, json=data)
         r_json = r.json()
         if r_json["errcode"] == 0:
-            logger.debug(f"钉钉Webhook推送成功\n通知对象：{url}\n消息内容：{content}")
+            logger.debug("钉钉Webhook推送成功")
         else:
-            logger.error(
-                f"钉钉Webhook推送失败错误码\n请求url:{url}\n请求data:{data}\n请求响应:{r_json}"
-            )
+            logger.error("钉钉Webhook推送失败")
 
     def send_ding2user(self, userid_list, content):
         """
@@ -173,11 +171,9 @@ class MsgSender(object):
         r = requests.post(url=send_url, json=data, timeout=5)
         r_json = r.json()
         if r_json["errcode"] == 0:
-            logger.debug(f"钉钉推送成功\n通知对象：{userid_list}\n消息内容：{content}")
+            logger.debug("钉钉推送成功")
         else:
-            logger.error(
-                f"钉钉推送失败\n请求连接:{send_url}\n请求参数:{data}\n请求响应:{r_json}"
-            )
+            logger.error("钉钉推送失败")
 
     def send_wx2user(self, msg, user_list):
         if not user_list:
@@ -197,9 +193,7 @@ class MsgSender(object):
         if r_json["errcode"] == 0:
             logger.debug(f"企业微信推送成功\n通知对象：{to_user}")
         else:
-            logger.error(
-                f"企业微信推送失败\n请求连接:{send_url}\n请求参数:{data}\n请求响应:{r_json}"
-            )
+            logger.error("企业微信推送失败")
 
     def send_qywx_webhook(self, qywx_webhook, msg):
         send_url = qywx_webhook
@@ -220,9 +214,7 @@ class MsgSender(object):
         if r_json["errcode"] == 0:
             logger.debug(f"企业微信机器人推送成功\n通知对象：机器人")
         else:
-            logger.error(
-                f"企业微信机器人推送失败\n请求连接:{send_url}\n请求参数:{data}\n请求响应:{r_json}"
-            )
+            logger.error("企业微信机器人推送失败")
 
     @staticmethod
     def send_feishu_webhook(url, title, content):
@@ -247,11 +239,9 @@ class MsgSender(object):
             or ("StatusCode" in r_json and r_json["StatusCode"] == 0)
             or ("code" in r_json and r_json["code"] == 0)
         ):
-            logger.debug(f"飞书Webhook推送成功\n通知对象：{url}\n消息内容：{content}")
+            logger.debug("飞书Webhook推送成功")
         else:
-            logger.error(
-                f"飞书Webhook推送失败错误码\n请求url:{url}\n请求data:{data}\n请求响应:{r_json}"
-            )
+            logger.error("飞书Webhook推送失败")
 
     @staticmethod
     def send_feishu_user(title, content, open_id, user_mail):

@@ -1165,9 +1165,7 @@ class MysqlEngine(EngineBase):
             if kwargs.get("binary_as_hex"):
                 result_set = self.result_set_binary_as_hex(result_set)
         except Exception as e:
-            logger.warning(
-                f"{self.name}语句执行报错，语句：{sql}，错误信息{traceback.format_exc()}"
-            )
+            logger.warning("%s SQL execution failed (%s)", self.name, type(e).__name__)
             result_set.error = str(e)
         finally:
             if close_conn:
@@ -1454,9 +1452,7 @@ class MysqlEngine(EngineBase):
             conn.commit()
             cursor.close()
         except Exception as e:
-            logger.warning(
-                f"{self.name}语句执行报错，语句：{sql}，错误信息{traceback.format_exc()}"
-            )
+            logger.warning("%s SQL execution failed (%s)", self.name, type(e).__name__)
             result.error = str(e)
         if close_conn:
             self.close()

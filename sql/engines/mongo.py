@@ -1391,7 +1391,7 @@ class MongoEngine(EngineBase):
             sql = re.sub(r"[;\s]*.explain\(\)$", ".explain()", sql).strip()
         result = {"msg": "", "bad_query": False, "filtered_sql": sql, "has_star": False}
         pattern = re.compile(
-            r"""^db\.(\w+\.?)+(?:\([\s\S]*\)(\s*;*)$)|^db\.getCollection\((?:\s*)(?:'|")(\w+\.?)+('|")(\s*)\)\.([A-Za-z]+)(\([\s\S]*\)(\s*;*)$)"""
+            r"""^db\.\w+(?:\.\w+)*\.?(?:\([\s\S]*\)(\s*;*)$)|^db\.getCollection\((?:\s*)(?:'|")\w+(?:\.\w+)*\.?('|")(\s*)\)\.([A-Za-z]+)(\([\s\S]*\)(\s*;*)$)"""
         )
         m = pattern.match(sql)
         if m is not None:

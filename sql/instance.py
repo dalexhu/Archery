@@ -6,6 +6,7 @@ import time
 
 import simplejson as json
 from django.conf import settings
+from django.utils._os import safe_join
 from django.contrib.auth.decorators import permission_required
 from django.http import HttpResponse
 from django.utils.translation import gettext as _
@@ -484,6 +485,17 @@ def schemasync(request):
         "data": {"diff_stdout": "", "patch_stdout": "", "revert_stdout": ""},
     }
 
+    # Database names become output filename components as well as URI values.
+    if any(
+        not name or any(char in name for char in ("/", "\\", "\x00"))
+        for name in (db_name, target_db_name)
+    ):
+        return HttpResponse(
+            json.dumps({"status": 1, "msg": _("非法调用！")}),
+            content_type="application/json",
+            status=400,
+        )
+
     # 循环对比全部数据库
     if db_name == "all" or target_db_name == "all":
         db_name = "*"
@@ -531,17 +543,11 @@ def schemasync(request):
     # 非全部数据库对比可以读取对比结果并在前端展示
     if db_name != "*":
         date = time.strftime("%Y%m%d", time.localtime())
-        patch_sql_file = "%s%s_%s.%s.patch.sql" % (
-            output_directory,
-            target_db_name,
-            tag,
-            date,
+        patch_sql_file = safe_join(
+            output_directory, f"{target_db_name}_{tag}.{date}.patch.sql"
         )
-        revert_sql_file = "%s%s_%s.%s.revert.sql" % (
-            output_directory,
-            target_db_name,
-            tag,
-            date,
+        revert_sql_file = safe_join(
+            output_directory, f"{target_db_name}_{tag}.{date}.revert.sql"
         )
         try:
             with open(patch_sql_file, "r") as f:

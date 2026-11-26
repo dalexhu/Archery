@@ -40,7 +40,7 @@ def get_access_token():
         rs.execute_command(f"SETEX ding_access_token {expires_in-60} {access_token}")
         return access_token
     else:
-        logger.error(f"获取钉钉access_token出错:{resp}")
+        logger.error("获取钉钉access_token出错")
         return None
 
 

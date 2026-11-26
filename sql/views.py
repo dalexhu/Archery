@@ -326,6 +326,7 @@ def rollback(request):
         context = {"errMsg": _("workflow_id参数为空.")}
         return render(request, "error.html", context)
     workflow = SqlWorkflow.objects.get(id=int(workflow_id))
+    workflow_id = workflow.id
 
     # 直接下载回滚语句
     if download:

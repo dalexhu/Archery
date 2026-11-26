@@ -169,7 +169,7 @@ class DorisEngine(MysqlEngine):
                 )
             except Exception as e:
                 logger.warning(
-                    f"{self.name} 命令执行报错，语句：{sql}， 错误信息：{traceback.format_exc()}"
+                    "%s SQL execution failed (%s)", self.name, type(e).__name__
                 )
                 execute_result.error = str(e)
                 execute_result.rows.append(
