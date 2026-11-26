@@ -5,6 +5,7 @@ from unittest.mock import patch, Mock, ANY
 
 import MySQLdb
 from django.test import RequestFactory, SimpleTestCase
+from django.utils.translation import gettext as _
 
 from common.config import SysConfig
 from sql import instance_account
@@ -989,7 +990,8 @@ class TestMysql(SimpleTestCase):
 
         result = engine.query(sql="select 1")
 
-        self.assertEqual(result.error, "boom")
+        self.assertEqual(result.error, _("Operation failed; contact an administrator."))
+        self.assertNotIn("boom", result.error)
 
     @patch.object(MysqlEngine, "query")
     def test_query_check_empty_star_explain_and_forbidden_user(self, query):
